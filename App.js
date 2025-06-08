@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StyleSheet } from 'react-native';
 import Loader from './src/components/loader';
 import Chats from './src/pages/Chats';
@@ -7,19 +9,14 @@ import Favorites from './src/pages/Favorites';
 import Profile from './src/pages/Profile';
 import Footer from './src/components/Footer';
 import Header from './src/components/Header';
+import LoginScreen from './src/components/Auth/LoginScreen';
+import RegisterScreen from './src/components/Auth/RegisterScreen';
 
-const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
+const Stack = createNativeStackNavigator();
+
+const MainApp = () => {
   const [activeTab, setActiveTab] = useState('chats');
   const [searchValue, setSearchValue] = useState('');
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleTabPress = (tab) => {
     setActiveTab(tab);
@@ -62,22 +59,47 @@ const App = () => {
 
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <>
-          {activeTab !== 'profile' && (
-            <Header
-              searchValue={searchValue}
-              onSearchChange={setSearchValue}
-              onSearch={handleSearch}
-            />
-          )}
-          {renderContent()}
-          <Footer activeTab={activeTab} onTabPress={handleTabPress} />
-        </>
+      {activeTab !== 'profile' && (
+        <Header
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          onSearch={handleSearch}
+        />
       )}
+      {renderContent()}
+      <Footer activeTab={activeTab} onTabPress={handleTabPress} />
     </View>
+  );
+};
+
+const App = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName="Login"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Home" component={MainApp} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 
