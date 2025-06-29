@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,31 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AuthContext } from '../../context/AuthContext';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext);
 
-  const handleLogin = () => {
-    // Test credentials
-    if (email === 'test@example.com' && password === 'password123') {
-      // Navigate to main app
-      navigation.navigate('Home');
-    } else {
-      alert('Invalid credentials');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Email and password are required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await login(email, password);
+      // Navigation to the main app will be handled by the router
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,8 +73,12 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Sign In</Text>
+          <TouchableOpacity 
+            style={[styles.loginButton, loading && styles.disabledButton]} 
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            <Text style={styles.loginButtonText}>{loading ? 'Signing In...' : 'Sign In'}</Text>
           </TouchableOpacity>
 
           <View style={styles.registerContainer}>
@@ -127,6 +142,9 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     marginBottom: 20,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   loginButtonText: {
     color: '#3b5998',

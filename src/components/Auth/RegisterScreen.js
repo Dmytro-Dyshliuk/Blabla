@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -7,23 +7,43 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AuthContext } from '../../context/AuthContext';
 
 const RegisterScreen = ({ navigation }) => {
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = () => {
+  const { register } = useContext(AuthContext);
+
+  const handleRegister = async () => {
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
-    // Here you would typically handle registration
-    // For now, we'll just navigate back to login
-    navigation.navigate('Login');
+
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'All fields are required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await register(username, email, password);
+      // Navigation to the main app will be handled by the router
+    } catch (error) {
+      Alert.alert(
+        'Error',
+        error.message || 'Registration failed. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -42,10 +62,11 @@ const RegisterScreen = ({ navigation }) => {
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Full Name"
+              placeholder="Username"
               placeholderTextColor="#A0A0A0"
-              value={name}
-              onChangeText={setName}
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
             />
             <TextInput
               style={styles.input}
@@ -74,8 +95,14 @@ const RegisterScreen = ({ navigation }) => {
             />
           </View>
 
-          <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-            <Text style={styles.registerButtonText}>Sign Up</Text>
+          <TouchableOpacity 
+            style={[styles.registerButton, loading && styles.disabledButton]} 
+            onPress={handleRegister}
+            disabled={loading}
+          >
+            <Text style={styles.registerButtonText}>
+              {loading ? 'Signing Up...' : 'Sign Up'}
+            </Text>
           </TouchableOpacity>
 
           <View style={styles.loginContainer}>
@@ -131,6 +158,9 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     marginBottom: 20,
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
   registerButtonText: {
     color: '#3b5998',

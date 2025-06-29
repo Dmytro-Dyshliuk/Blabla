@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { AuthContext } from '../context/AuthContext';
 
 const Profile = () => {
+  const { user, logout } = useContext(AuthContext);
+
   const menuItems = [
     { id: 'settings', icon: 'settings-outline', label: 'Налаштування' },
     { id: 'notifications', icon: 'notifications-outline', label: 'Сповіщення' },
@@ -18,8 +21,8 @@ const Profile = () => {
           <Ionicons name="person-circle" size={100} color="#007AFF" />
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.name}>Ім'я користувача</Text>
-          <Text style={styles.email}>user@example.com</Text>
+          <Text style={styles.name}>{user?.username}</Text>
+          <Text style={styles.email}>{user?.email}</Text>
         </View>
         <TouchableOpacity style={styles.editButton}>
           <Text style={styles.editButtonText}>Редагувати профіль</Text>
@@ -36,7 +39,7 @@ const Profile = () => {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={logout}>
         <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
         <Text style={styles.logoutText}>Вийти</Text>
       </TouchableOpacity>
